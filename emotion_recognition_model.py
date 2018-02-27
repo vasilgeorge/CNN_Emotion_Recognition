@@ -56,6 +56,18 @@ class Emotion_Recognition_Model(object):
 
         # Output shape should be: [batch_size, 12, 12, 64]
 
+        # Dense layer - a fully connected layer
 
+        pool2_flat  = tf.reshape(pool2, [-1, 12 * 12 * 64])
 
-                        
+        # pool2_flat shape : [1,9216] - [batch_size, features]
+
+        dense = tf.layers.dense(inputs = pool2_flat, units = 1024, activation = tf.nn.relu)
+        dropout = tf.nn.dropout(inputs = dense, rate = 0.3, training=mode == tf.estimator.ModeKeys.TRAIN)
+
+        # Output shape : [batch_size, 1024(hidden units)]
+
+        logits = tf.layers.dense(inputs = dropout, units = 7)
+
+        # We define output units to be 7(seven), corresponding to each of our emotions
+        # Output shape should be [batch_size, 7]
