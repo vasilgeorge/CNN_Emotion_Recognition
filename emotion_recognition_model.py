@@ -70,3 +70,6 @@ class Emotion_Recognition_Model(object):
 
         # We define output units to be 7(seven), corresponding to each of our emotions
         # Output shape should be [batch_size, 7]
+        return logits
+
+    def build_graph():
