@@ -12,10 +12,10 @@ tf.logging.set_verbosity(tf.logging.INFO)
 """ Input to this graph are going to be images of size 48x48 pixels which we are going to use to implement emotion recognition
     Our emotions are going to be: 0=Angry, 1=Fear, 2=Happy, 3=Sad, 4=Disgust, 5=Surprise, 6=Neutral"""
 
-class Emotion_Recognition_Model(object):
+class Emotion_Recognition_Model(object, data_dict):
 
     def __init__(self):
-        self.input_images =
+        self.data_dict = data_dict
 
 
 
@@ -55,13 +55,28 @@ class Emotion_Recognition_Model(object):
 
         # Output shape should be: [batch_size, 12, 12, 64]
 
+        conv3 = tf.layers.conv2d(
+                                inputs = pool1,
+                                filters = 128,
+                                kernel_size = [5,5],
+                                padding = "same",
+                                activation = tf.nn.relu
+                                )
+
+        # Output shape should be: [batch_size, 24, 24, 128 ]
+
+        pool3 = tf.layers.max_pooling2d(inputs = conv3, pool_size = [2,2], strides = 2)
+
+        # Output shape should be: [batch_size, 6, 6, 128]
+
+
         # Dense layer - a fully connected layer
 
-        pool2_flat  = tf.reshape(pool2, [-1, 12 * 12 * 64])
+        pool3_flat  = tf.reshape(pool3, [-1, 6 * 6 * 28])
 
         # pool2_flat shape : [1,9216] - [batch_size, features]
 
-        dense = tf.layers.dense(inputs = pool2_flat, units = 1024, activation = tf.nn.relu)
+        dense = tf.layers.dense(inputs = pool3_flat, units = 1024, activation = tf.nn.relu)
         dropout = tf.nn.dropout(inputs = dense, rate = 0.3, training=mode == tf.estimator.ModeKeys.TRAIN)
 
         # Output shape : [batch_size, 1024(hidden units)]
@@ -70,6 +85,27 @@ class Emotion_Recognition_Model(object):
 
         # We define output units to be 7(seven), corresponding to each of our emotions
         # Output shape should be [batch_size, 7]
-        return logits
+
+
+        predictions = {
+            "classes" : tf.argmax(input = logits, axis = 1),
+            "probabilities" : tf.nn.softmax(logits, name = 'softmax_tensor')
+        }
+
+        if mode == tf.estimator.ModeKeys.PREDICT:
+            return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
+
+        # Calculate Loss
+        one_hot_labels = tf.one_hot(self.data_dict['y_train']
+
+
+
+
+
+
+
+
+
+
 
     def build_graph():
