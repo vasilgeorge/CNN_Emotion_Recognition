@@ -14,70 +14,6 @@ import platform
 from PIL import Image
 
 
-def _parse_images_function():
-
-        # Choose a random image from the training set
-        images_filename_queue = tf.train.string_input_producer(tf.train.match_filenames_once(
-            "/Users/vasilgeorge/Documents/Imperial Machine Learning MSc 2017:18/Machine Learning/assignment2_advanced/CNN_Emotion_Recognition/public/Train/1.jpg"))
-        image_reader=tf.WholeFileReader()
-        _, image_file = image_reader.read(images_filename_queue)
-
-        image = tf.image.decode_jpeg(image_file)
-
-
-        # labels_filename_queue = tf.train.string_input_producer(tf.train.match_filenames_once(
-        #     "/Users/vasilgeorge/Documents/Imperial Machine Learning MSc 2017:18/Machine Learning/assignment2_advanced/CNN_Emotion_Recognition/public/labels_public.txt"))
-        # labels_reader = tf.TextLineReader(skip_header_lines=1)
-        # _, labels_file = labels_reader.read(labels_filename_queue)
-        # label_file = tf.decode_raw(labels_file, tf.uint8)
-        #label = labels_file[-1]
-
-
-        image.set_shape((48, 48, 3))
-
-        num_preprocess_threads = 1
-        min_queue_examples = 256
-        batch_size = 64
-        image_batch = tf.train.shuffle_batch(
-                                        [image],
-                                        batch_size=batch_size,
-                                        num_threads=num_preprocess_threads,
-                                        capacity=min_queue_examples + 3 * batch_size,
-                                        min_after_dequeue=min_queue_examples)
-
-        with tf.Session() as sess:
-            tf.local_variables_initializer().run()
-            coord = tf.train.Coordinator()
-            threads = tf.train.start_queue_runners(coord = coord)
-            image_tensors = sess.run(image)
-            print(image_tensors)
-
-            coord.request_stop()
-            coord.join(threads)
-
-
-def get_labels():
-
-    filename = '/Users/vasilgeorge/Documents/Imperial Machine Learning MSc 2017:18/Machine Learning/assignment2_advanced/CNN_Emotion_Recognition/public/labels_public.txt'
-
-    labels_file = open(filename, 'r')
-    lines = labels_file.readlines()
-    labels_length = len(lines)
-    labels = np.array(labels_length)
-    labels = ["" for x in range(labels_length)]
-    i = 0
-    j = 0
-    for line in lines:
-        if i != 0:
-            line = line[:-1]
-            labels[j] = line[-1]
-            j += 1
-        i += 1
-
-    x = labels[0]
-    i_x = int(x)
-    print(i_x)
-
 def get_FER2013_data(num_training=28709, num_validation=4000, \
                      num_test=3589, subtract_mean=True):
     """
@@ -99,8 +35,8 @@ def get_FER2013_data(num_training=28709, num_validation=4000, \
             png_to_array = png_to_array.reshape((1,png.size[1],png.size[0],1))
             X_train.append(png_to_array)
             y_train.append(labels[i-1])
-            if i%100==0:
-                print(np.round(i/30000,2) , '% loaded')
+        #    if i%100==0:
+        #        print(np.round(i/30000,2) , '% loaded')
 
     for i in range(num_training+1,num_training+num_test+1):
         with Image.open(test_dir + str(i) + '.jpg').convert('L') as png:
@@ -145,16 +81,3 @@ def get_FER2013_data(num_training=28709, num_validation=4000, \
       'X_train': X_train, 'y_train': y_train,
       'X_val': X_val, 'y_val': y_val,
       'X_test': X_test, 'y_test': y_test}
-
-
-
-dict1 = get_FER2013_data()
-one_hot = []
-values = dict1['y_train']
-print(values)
-for i in range(len(values)):
-    one_hot.append( tf.one_hot(int(values[i]), 7))
-
-with tf.Session() as sess:
-    sess.run(one_hot[1])
-    print(one_hot[1])
